@@ -7,6 +7,7 @@ Classifies apps from Google Play and App Store JSON files into a CSV with additi
 import json
 import csv
 import re
+import requests
 
 # --- Known general-purpose LLM app identifiers ---
 GENERAL_PURPOSE_IDS = {
@@ -28,7 +29,7 @@ GENERAL_PURPOSE_KEYWORDS_TITLE = [
 
 # Keywords strongly indicating companion/relational apps
 COMPANION_KEYWORDS = [
-    'ai boyfriend', 'ai girlfriend', 'virtual boyfriend', 'virtual girlfriend',
+    'boyfriend', 'girlfriend', 'virtual boyfriend', 'virtual girlfriend',
     'ai companion', 'ai friend', 'ai chat companion', 'roleplay',
     'ai lover', 'ai partner', 'ai soulmate', 'ai romance', 'fantasy boyfriend',
     'fantasy girlfriend', 'ai date', 'ai dating', 'romantic ai',
@@ -75,25 +76,6 @@ TASK_SPECIFIC_KEYWORDS = [
     'recipe', 'cooking', 'weather', 'news', 'browser',
 ]
 
-# Well-known companion platforms and their web info
-KNOWN_PLATFORMS = {
-    'character.ai': {'web_accessible': True, 'web_url': 'https://character.ai', 'login_required': True, 'login_methods': 'Google, Apple, Email', 'age_verification_required': True, 'age_verification_method': 'Self-declaration (date of birth)'},
-    'chai': {'web_accessible': True, 'web_url': 'https://chai-research.com', 'login_required': True, 'login_methods': 'Google, Apple, Email', 'age_verification_required': False, 'age_verification_method': ''},
-    'replika': {'web_accessible': True, 'web_url': 'https://replika.com', 'login_required': True, 'login_methods': 'Email/Password, Google, Apple, Facebook', 'age_verification_required': True, 'age_verification_method': 'Self-declaration (date of birth)'},
-    'talkie': {'web_accessible': True, 'web_url': 'https://www.talkie-ai.com', 'login_required': True, 'login_methods': 'Google, Apple, Email', 'age_verification_required': True, 'age_verification_method': 'Self-declaration (date of birth)'},
-    'janitor ai': {'web_accessible': True, 'web_url': 'https://janitorai.com', 'login_required': True, 'login_methods': 'Email/Password, Google', 'age_verification_required': True, 'age_verification_method': 'Self-declaration (18+ confirmation)'},
-    'crushon.ai': {'web_accessible': True, 'web_url': 'https://crushon.ai', 'login_required': True, 'login_methods': 'Google, Email, Discord', 'age_verification_required': True, 'age_verification_method': 'Self-declaration (18+ confirmation)'},
-    'candy.ai': {'web_accessible': True, 'web_url': 'https://candy.ai', 'login_required': True, 'login_methods': 'Email/Password, Google', 'age_verification_required': True, 'age_verification_method': 'Self-declaration (18+ confirmation)'},
-    'kindroid': {'web_accessible': True, 'web_url': 'https://kindroid.ai', 'login_required': True, 'login_methods': 'Google, Email/Password', 'age_verification_required': True, 'age_verification_method': 'Self-declaration (18+ confirmation)'},
-    'nomi.ai': {'web_accessible': True, 'web_url': 'https://nomi.ai', 'login_required': True, 'login_methods': 'Email/Password, Google', 'age_verification_required': False, 'age_verification_method': ''},
-    'eva ai': {'web_accessible': False, 'web_url': '', 'login_required': True, 'login_methods': 'Email/Password, Google, Apple', 'age_verification_required': True, 'age_verification_method': 'Self-declaration (date of birth)'},
-    'chai ai': {'web_accessible': True, 'web_url': 'https://www.chai-research.com/chat', 'login_required': True, 'login_methods': 'Google, Apple', 'age_verification_required': False, 'age_verification_method': ''},
-    'myanima': {'web_accessible': True, 'web_url': 'https://myanima.ai', 'login_required': True, 'login_methods': 'Email/Password, Google, Apple', 'age_verification_required': False, 'age_verification_method': ''},
-    'paradot': {'web_accessible': True, 'web_url': 'https://www.paradot.ai', 'login_required': True, 'login_methods': 'Email/Password, Google, Apple', 'age_verification_required': True, 'age_verification_method': 'Self-declaration (date of birth)'},
-    'poly.ai': {'web_accessible': True, 'web_url': 'https://poly.ai', 'login_required': True, 'login_methods': 'Google, Apple, Email', 'age_verification_required': False, 'age_verification_method': ''},
-    'spicychat': {'web_accessible': True, 'web_url': 'https://spicychat.ai', 'login_required': True, 'login_methods': 'Google, Email, Discord', 'age_verification_required': True, 'age_verification_method': 'Self-declaration (18+ confirmation)'},
-    'poe': {'web_accessible': True, 'web_url': 'https://poe.com', 'login_required': True, 'login_methods': 'Google, Apple, Email/Password', 'age_verification_required': False, 'age_verification_method': ''},
-}
 
 
 def classify_app_type(title, description, app_id, genre=''):
@@ -206,15 +188,39 @@ def classify_app_type(title, description, app_id, genre=''):
     return 'other'
 
 
+def check_web_app_live(url):
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        r = requests.get(url, headers=headers, timeout=5)
+        html = r.text.lower()
+
+        # Marketing signals
+        if re.search(r'(only available on (android|ios|mobile))', html):
+            web_accessible = False
+        if re.search(r'(mobile app only|app only experience)', html):
+            web_accessible = False 
+        
+        # Strong indicators of actual app
+        if any(x in html for x in [
+            'login', 'sign in', 'sign up',
+            'login to chat', 'sign in to chat', 'sign up to chat',
+            'start chatting'
+        ]):
+            return True
+ 
+
+    except:
+        return False
+
+    return False
+
+
 def infer_web_info(title, description, developer_website, app_id):
     """Infer web accessibility from known platforms and app metadata."""
     title_lower = title.lower()
     desc_lower = description.lower()
-
-    # Check known platforms
-    for platform, info in KNOWN_PLATFORMS.items():
-        if platform in title_lower or platform in (app_id or '').lower():
-            return info
 
     # Check developer website
     web_url = developer_website or ''
@@ -222,10 +228,17 @@ def infer_web_info(title, description, developer_website, app_id):
     # Most mobile-only apps are not web accessible
     # Apps that mention "web", "browser", "website" access in description
     web_accessible = False
-    if re.search(r'(available on |access (via|through|on) )?(the )?web', desc_lower):
-        web_accessible = True
-    if re.search(r'(visit|try|use) (us )?(at |on )?(our )?(website|web app)', desc_lower):
-        web_accessible = True
+
+    # Added HTML web scrapping layer for stronger validation.
+    if web_url:
+        web_accessible = check_web_app_live(web_url)
+
+
+    # Explicit signals that it is NOT web accessible (mobile-first / marketing-only)
+    if re.search(r'(only available on (android|ios|mobile))', desc_lower):
+        web_accessible = False
+    if re.search(r'(mobile app only|app only experience)', desc_lower):
+        web_accessible = False    
 
     return {
         'web_accessible': web_accessible,
@@ -331,11 +344,15 @@ def infer_age_verification(description, content_rating=''):
 def process_google_play_apps(data):
     """Process Google Play apps into standardized records."""
     records = []
+    c=0
     for app in data['results']:
+        c += 1
         title = app.get('title', '')
         description = app.get('description', '')
         app_id = app.get('appId', '')
         genre = app.get('genre', '')
+
+        print(f"Processing Google Play app {c}: {title}")
 
         app_type = classify_app_type(title, description, app_id, genre)
         web_info = infer_web_info(title, description, app.get('developerWebsite', ''), app_id)
@@ -383,11 +400,15 @@ def process_google_play_apps(data):
 def process_app_store_apps(data):
     """Process App Store apps into standardized records."""
     records = []
+    c=0
     for app in data['results']:
+        c += 1
         title = app.get('title', '')
         description = app.get('description', '')
         app_id = app.get('appId', '')
         genre = app.get('primaryGenre', '')
+
+        print(f"Processing App Store app {c}: {title}")
 
         app_type = classify_app_type(title, description, app_id, genre)
         web_info = infer_web_info(title, description, app.get('developerWebsite', ''), app_id)

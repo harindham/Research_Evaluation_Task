@@ -47,7 +47,7 @@ from datetime import datetime
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
 
 # Default character URL (a popular public character)
-DEFAULT_CHARACTER_URL = "https://character.ai/chat/8_1NyR8w1dOXmI1uWaieQcd147hecbdIK7CeEAIrdJk"
+DEFAULT_CHARACTER_URL = "https://character.ai/chat/M4gRx-hB6Rr8iT8O0_mmsEQ6vX35yi3qMGtflV1xrlE"
 
 # Messages to send to the AI character
 INPUT_MESSAGES = [
@@ -119,7 +119,7 @@ def get_latest_response(page):
         # Fallback: get all text blocks in the chat area and return the last substantial one
         all_msgs = page.query_selector_all('div[class*="chat"] div[class*="message"], div[class*="swiper"] div')
         if all_msgs:
-            for msg in reversed(all_msgs):
+            for msg in all_msgs:
                 text = msg.inner_text().strip()
                 if text and len(text) > 5:
                     return text
