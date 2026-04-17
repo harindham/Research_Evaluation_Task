@@ -44,10 +44,10 @@ This Proof of Concept demonstrates automated interaction with an AI companion ch
 
 ## Extending to Multiple Platforms
 
-- **Modular design** — the core functions (`send_message`, `wait_for_response`, `get_latest_response`) can be abstracted into a base class, with platform-specific subclasses overriding only the selectors and navigation logic for each platform
-- **Config-driven platform support** — each platform's URL, CSS selectors, and login flow could be defined in a JSON or YAML config file, allowing new platforms to be added without changing the core script
-- **API-first where available** — platforms that offer a public API (e.g. character engines built on OpenAI) could bypass browser automation entirely
-- **Parallel execution** — using Playwright's async API or Python's `multiprocessing`, multiple platforms or characters could be automated simultaneously
+- The core functions (`send_message`, `wait_for_response`, `get_latest_response`) can be abstracted into a base class, with platform-specific subclasses overriding only the selectors and navigation logic for each platform
+- Each platform's URL, CSS selectors, and login flow could be defined in a JSON or YAML config file, allowing new platforms to be added without changing the core script
+- Platforms that offer a public API (e.g. character engines built on OpenAI) could bypass browser automation entirely
+- Using Playwright's async API or Python's `multiprocessing`, multiple platforms or characters could be automated simultaneously
 
 # Demo Video URL:
 
