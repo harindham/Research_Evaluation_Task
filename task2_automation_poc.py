@@ -1,41 +1,4 @@
 #!/usr/bin/env python3
-"""
-Task 2: Automation Proof of Concept
-Platform: Character.AI (https://character.ai)
-Approach: Playwright browser automation
-
-This PoC demonstrates automated interaction with an AI companion character
-on Character.AI by sending a list of messages and capturing responses.
-
-Approach:
-- Uses Playwright to automate a Chromium browser
-- Navigates to a Character.AI character chat page
-- Sends predefined messages sequentially
-- Waits for and captures AI responses
-- Saves conversation to JSON and CSV
-
-Why this approach:
-- Character.AI is web-accessible, making browser automation viable
-- Playwright is robust, supports modern SPAs, and handles dynamic content well
-- No API reverse-engineering needed (more maintainable)
-- Easily extensible to other web-based platforms (Replika, Chai, etc.)
-
-Limitations:
-- Requires a valid Character.AI account (login needed)
-- Rate-limited by Character.AI's response generation speed
-- UI changes may break selectors (mitigated by using data-testid and role selectors)
-- Cannot bypass CAPTCHA if triggered
-
-Usage:
-    python3 task2_automation_poc.py [--character-url URL] [--headless]
-
-The script will:
-1. Open Character.AI in a browser
-2. Pause for manual login (first run only; session is saved)
-3. Navigate to the specified character
-4. Send each message and capture the response
-5. Save results to conversation_results.json and conversation_results.csv
-"""
 
 import argparse
 import json
