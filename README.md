@@ -26,19 +26,19 @@ This Proof of Concept demonstrates automated interaction with an AI companion ch
 
 ## Why This Approach is Effective and Scalable
 
-- **No API dependency** — Playwright controls a real browser, so it works with any web-based AI platform regardless of whether a public API exists
-- **Persistent session** — login cookies are saved to disk, eliminating the need to re-authenticate on every run
-- **Element detection** — multiple CSS selector strategies are tried in sequence, making the script resilient to minor UI changes on the platform
-- **Flexible inputs** — the character URL and message list are easily swappable, allowing the same script to be reused across different characters or question sets
+- Playwright controls a real browser, so it works with any web-based AI platform regardless of whether a public API exists
+- Login cookies are saved to disk, eliminating the need to re-authenticate on every run
+- Multiple CSS selector strategies are tried in sequence, making the script resilient to minor UI changes on the platform
+- The character URL and message list are easily swappable, allowing the same script to be reused across different characters or question sets
 
 ---
 
 ## Assumptions and Limitations
 
-- **Login required** — the script assumes the user will log in manually on the first run. Automated credential entry was intentionally avoided for security reasons
-- **DOM selector** — Although multiple selectors are tried, a major Character.AI UI redesign could still break response detection and require selector updates
-- **Single character only** — each run targets one character URL; automating across multiple characters would require looping logic to be added.
-- **Rate limiting** — Character.AI may throttle or block automated interactions if too many messages are sent too quickly, as the platform is designed for human-paced conversation
+- The script assumes the user will log in manually on the first run. Automated credential entry was intentionally avoided for security reasons
+- Although multiple selectors are tried, a major Character.AI UI redesign could still break response detection and require selector updates
+- Each run targets one character URL; automating across multiple characters would require looping logic to be added.
+- Character.AI or any other application may throttle or block automated interactions if too many messages are sent too quickly, as the platform is designed for human-paced conversation
 
 ---
 
@@ -49,9 +49,9 @@ This Proof of Concept demonstrates automated interaction with an AI companion ch
 - Platforms that offer a public API (e.g. character engines built on OpenAI) could bypass browser automation entirely
 - Using Playwright's async API or Python's `multiprocessing`, multiple platforms or characters could be automated simultaneously
 
-# Demo Video URL:
+# POC Video URL:
 
-
+https://youtu.be/k393ShGTfkQ
 
 ## Usage
 
